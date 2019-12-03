@@ -1,11 +1,13 @@
-
 import os
-import requests
+import re
 import time
+import boto3
+import requests
 from bs4 import BeautifulSoup
+s3 = boto3.resource('s3')
 
 
-def full_scrape(episode_directory):
+def full_scrape(bucket_name, prefix='episodes'):
     """
     Download every episode of Cooking Issues!
     Starts from the homepage given below, and follows the pagination until there
@@ -23,7 +25,7 @@ def full_scrape(episode_directory):
     page = "https://www.podbean.com/podcast-detail/c4kny-38725/Cooking-Issues-Podcast"
     while page:
         episode_urls, page = get_episode_urls(page)
-        downloader(episode_urls, episode_directory)
+        downloader(episode_urls, bucket_name, prefix)
 
 def get_episode_urls(page):
     """
@@ -50,7 +52,7 @@ def get_episode_urls(page):
         next_page = "https://www.podbean.com" + next_page.find("a").get("href")
     return urls, next_page
 
-def downloader(episode_urls, episode_directory):
+def downloader(episode_urls, bucket_name, prefix):
     """
     Loop through a list of URLs and obtain the MP3 file from the download link
     on each page. Each MP3 will be stored locally unless it has already been
@@ -66,16 +68,16 @@ def downloader(episode_urls, episode_directory):
     for url in episode_urls:
         soup = BeautifulSoup(requests.get(url).text, 'html.parser')
         episode_name = soup.find("p", {"class":"pod-name"}).text
-        filename = episode_name.strip().replace("/", "") + ".mp3"
-        if filename in os.listdir(episode_directory):
-            print("{} has already been downloaded".format(episode_name))
+        filename = re.sub(r"[^\w\s]| ", "", episode_name.strip()) + ".mp3"
+        current_files = [f.key for f in s3.Bucket(bucket_name).objects.all()]
+        if filename in current_files:
+            print("{} has already been uploaded to S3".format(episode_name))
         else:
             mp3_url = soup.find("a", {"class":"download-btn"}).get("href").split("?")[0]
             mp3 = requests.get(mp3_url)
-            with open(episode_directory + filename, "wb") as f:
-                f.write(mp3.content)
-                print("{} downloaded!".format(episode_name))
+            s3.Object(bucket_name, prefix + '/' + filename).put(Body=mp3.content)
+            print("{} uploaded!".format(episode_name))
             time.sleep(2)
 
 if __name__ == "__main__":
-    full_scrape("./episodes/")
+    full_scrape("pod-transcription-storage")
