@@ -34,7 +34,7 @@ def transcribe_all():
         if f["Key"][-4:]=="json"
     ]
     for (episode_name, job_uri) in zip(episode_names, job_uris):
-        if episode_name in current_transcriptions:
+        if episode_name+".json" in current_transcriptions:
             print("{} has already been transcribed".format(episode_name))
         else:
             transcribe_one(bucket_name, episode_name, job_uri)
@@ -63,10 +63,4 @@ def transcribe_one(bucket_name, episode_name, job_uri):
         time.sleep(5)
 
 if __name__ == "__main__":
-#    transcribe_all()
-    bucket_name = "pod-transcription-storage"
-    prefix = "episodes"
-    region = "us-west-2"
-    episode_names, job_uris = get_uris(bucket_name, prefix, region)
-    for episode_name, job_uri in zip(episode_names[:2], job_uris[:2]):
-        transcribe_one(bucket_name, episode_name, job_uri)
+    transcribe_all()
