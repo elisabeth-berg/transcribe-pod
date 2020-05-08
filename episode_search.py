@@ -34,14 +34,15 @@ def search_episodes(search_phrase, bucket_name="pod-transcription-storage", cont
             match_rows["context"] = context
             # Only return rows containing the entire search phrase
             match_rows = match_rows[match_rows["context"].str.contains(search_phrase)]
-            match_df = pd.concat([match_df, match_rows])
-            print(
-                "{}\nFirst appearance at {}:\n\"{}\"\n---------------------".format(
-                    episode,
-                    match_rows.iloc[0]["start_time"],
-                    match_rows.iloc[0]["context"]
+            if len(match_rows) > 0:
+                match_df = pd.concat([match_df, match_rows])
+                print(
+                    "{}\nFirst appearance at {}:\n\"{}\"\n---------------------".format(
+                        episode,
+                        match_rows.iloc[0]["start_time"],
+                        match_rows.iloc[0]["context"]
+                    )
                 )
-            )
     return match_df
 
 def json_parse(episode, transcript_dir="pod-transcription-storage"):
