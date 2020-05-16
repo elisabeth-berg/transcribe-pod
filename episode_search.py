@@ -1,4 +1,5 @@
 import boto3
+import datetime
 import json
 import os
 import pandas as pd
@@ -12,7 +13,7 @@ s3 = boto3.resource(
     aws_secret_access_key=SECRET_KEY,
     )
 
-def search_episodes(search_phrase, bucket_name="pod-transcription-storage", context_window=20):
+def search_episodes(search_phrase, bucket_name="pod-transcription-storage", context_window=30):
     transcriptions = [
         f.key for f in s3.Bucket(bucket_name).objects.all()
         if f.key[-4:]=="json"
@@ -43,7 +44,10 @@ def search_episodes(search_phrase, bucket_name="pod-transcription-storage", cont
                         match_rows.iloc[0]["context"]
                     )
                 )
-    return match_df
+    match_df["start_time"] = match_df["start_time"].apply(
+        lambda x: str(datetime.timedelta(seconds = float(x)))
+    )
+    return match_df[["filename", "start_time", "context"]]
 
 def json_parse(episode, transcript_dir="pod-transcription-storage"):
     transcript = json.loads(
