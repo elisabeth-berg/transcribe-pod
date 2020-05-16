@@ -17,12 +17,13 @@ def home():
 def search():
     search_phrase = request.form['search_phrase']
     results = search_episodes(search_phrase)
-    output = {
-        "e{}".format(i):
-        results.iloc[i]["filename"] + ":\n" + results.iloc[i]["context"]
-        for i in range(len(results))
-    }
-    return jsonify(result=output)
+    # output = {
+    #     "e{}".format(i):
+    #     results.iloc[i]["filename"] + ":\n" + results.iloc[i]["context"]
+    #     for i in range(len(results))
+    # }
+    #return jsonify(result=output)
+    return render_template("search.html", table=results.to_html())
 
 if __name__ == '__main__':
     app.run(debug=True)

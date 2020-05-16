@@ -4,31 +4,15 @@
     <meta charset="UTF-8">
     <title>First Flask App</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
 </head>
-<script>
-function myFunction() {
-var search_phrase= $('#search_phrase').val();
-  $.ajax({
-              url: "/search",
-              type: "POST",
-              data: {search_phrase:search_phrase}
-          }).done(function(response) {
-            var html= "<br><br><br><p> <b> RESULT : <b><p>";
-            response =response.result;
-                 $.each(response,function(key,val){
-                 console.log(val);
-                    html+="<p>"+val+"<p>"
-                });
-                html +="<br>";
-                $(".show-data").append(html);
-            });
-};
-  </script>
 <body>
     <p>
         What are you looking for in Cooking Issues?<br><br>
-            Search Phrase<input type="text" id="search_phrase" name="search_phrase"><br><br>
-            <button id="clicked" onclick="myFunction()">Submit</button>
+            <form action = "http://localhost:5000/search" method = "POST">
+              <p>Search Phrase <input type="text" name="search_phrase"></p>
+              <p><input type="submit" value="submit"/></p>
+            </form>
         </p>
     <div class="show-data" >
     </div>
